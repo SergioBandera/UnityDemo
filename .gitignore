@@ -1,0 +1,37 @@
+﻿################################################################################
+# Este archivo .gitignore ha sido creado automáticamente por Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/FootballGame
+/.vsconfig
+/Assembly-CSharp-Editor.csproj
+/Assembly-CSharp.csproj
+/Assets/CampoContainer.prefab
+/Assets/CampoContainer.prefab.meta
+/Assets/Hyper Casual Characters
+/Assets/Hyper Casual Characters.meta
+/Assets/InputSystem_Actions.inputactions
+/Assets/InputSystem_Actions.inputactions.meta
+/Assets/Materials
+/Assets/Materials.meta
+/Assets/Porteria2.prefab
+/Assets/Porteria2.prefab.meta
+/Assets/Readme.asset
+/Assets/Readme.asset.meta
+/Assets/Scenes
+/Assets/Scenes.meta
+/Assets/Scripts.meta
+/Assets/Settings
+/Assets/Settings.meta
+/Assets/StarterAssets
+/Assets/StarterAssets.meta
+/Assets/TutorialInfo
+/Assets/TutorialInfo.meta
+/FootballGame.sln
+/Library
+/Logs
+/obj/Debug
+/Packages
+/ProjectSettings
+/Temp
+/UserSettings

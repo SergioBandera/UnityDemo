@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 using UnityEngine.InputSystem;
 
 public class PlayerManager : MonoBehaviour
@@ -8,6 +9,14 @@ public class PlayerManager : MonoBehaviour
     public GameObject ball;
     public int goalkeeperIndex = 0; // Índice del portero en la lista
     private int currentPlayerIndex = 0;
+
+    public enum Team
+    {
+        BlueTeam,
+        RedTeam,
+        None,
+    }
+    public Team teamHaveBall = Team.None;
 
     void Start()
     {
@@ -37,6 +46,8 @@ public class PlayerManager : MonoBehaviour
                 SelectNextPlayer();
             }
         }
+
+
     }
 
     void SelectNextPlayer()
@@ -74,13 +85,17 @@ public class PlayerManager : MonoBehaviour
             allowedIndices = new List<int> { goalkeeperIndex };
         }
 
+        // Si el índice no está permitido, selecciona el primero permitido
+        if (!allowedIndices.Contains(index) && allowedIndices.Count > 0)
+        {
+            index = allowedIndices[0];
+        }
+
         for (int i = 0; i < players.Count; i++)
         {
-            // Solo habilita el jugador seleccionado si está entre los permitidos
             players[i].enabled = (i == index) && allowedIndices.Contains(i);
         }
         currentPlayerIndex = index;
-        Debug.Log($"Jugador seleccionado: {index}, permitidos: {string.Join(",", allowedIndices)}");
     }
 
     void SelectPlayer(PlayerController player)
@@ -94,7 +109,13 @@ public class PlayerManager : MonoBehaviour
     {
         var playerWithBall = FindPlayerWithBall();
         if (playerWithBall != null)
+        {
             SelectPlayer(playerWithBall);
+            NavMeshAgent selectPlayerNavMeshAgent = playerWithBall.GetComponent<UnityEngine.AI.NavMeshAgent>();
+            selectPlayerNavMeshAgent.enabled = false;
+
+
+        }
     }
 
     int FindClosestPlayerToBall()

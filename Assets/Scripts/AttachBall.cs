@@ -2,14 +2,23 @@ using UnityEngine;
 
 public class AttachBall : MonoBehaviour
 {
-    public Transform rightFoot;           // Asignar en inspector el transform del pie derecho
+    [SerializeField] private Transform rightFoot; // Asignar en inspector
+    [SerializeField] private PlayerManager playerManager; // Asignar en inspector
+
     private GameObject ball = null;
     private Rigidbody ballRb = null;
     private Collider ballCollider = null;
-    private float attachCooldown = 0.2f; // Tiempo de espera tras chutar (en segundos)
+    private float attachCooldown = 0.2f;
     private float cooldownTimer = 0f;
-    public PlayerManager playerManager; // Asigna en el inspector
+    public static AttachBall Instance;
 
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+    }
     private void Update()
     {
         if (cooldownTimer > 0f)
@@ -18,60 +27,74 @@ public class AttachBall : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        // Verifica que colisiona con objeto etiquetado "Pelota" y que el cooldown ha terminado
         if (collision.gameObject.CompareTag("Pelota") && ball == null && cooldownTimer <= 0f)
         {
             ball = collision.gameObject;
-
             ballRb = ball.GetComponent<Rigidbody>();
             ballCollider = ball.GetComponent<Collider>();
 
-            if (ballRb != null && ballCollider != null)
+            ballRb.isKinematic = true;
+            ballCollider.enabled = false;
+            SetTeamHaveBallByTag(gameObject.tag);
+            playerManager?.SelectPlayerWithBall();
+            PlayerController playerController = GetComponent<PlayerController>();
+            if (playerController != null)
             {
-                ballRb.isKinematic = true;   // Desactiva física para poder moverla manualmente
-                ballCollider.enabled = false; // Desactiva colisión para evitar problemas al moverla
+                playerController.UpdateBallReferences();
+                playerController.SetControlledByPlayer(true); // Ahora el jugador es controlado por el usuario
             }
-
-            // Notifica al PlayerManager para seleccionar este jugador
-            if (playerManager != null)
-            {
-                playerManager.SelectPlayerWithBall();
-            }
+            Debug.Log($"Jugador {gameObject.name} recibe la pelota en {transform.position}");
         }
     }
 
     private void FixedUpdate()
     {
-        // Si hay pelota atada, mueve la pelota a la posición del pie derecho con un offset si quieres
         if (ball != null && rightFoot != null && ballRb.isKinematic)
         {
             ball.transform.position = rightFoot.position + rightFoot.forward * 0.4f + Vector3.up * 0.17f;
             ball.transform.rotation = rightFoot.rotation;
         }
-
     }
-    public GameObject GetAttachedBall()
+
+    public GameObject GetAttachedBall() => ball;
+    public PlayerManager.Team GetTeam()
     {
-        return ball;
+        return playerManager.teamHaveBall;
     }
 
     public void ClearAttachedBall()
     {
-        if (ball != null)
+        if (ball == null) return;
+
+        ballCollider.enabled = true;
+        ballRb.isKinematic = false;
+
+        ball = null;
+        ballRb = null;
+        ballCollider = null;
+        SetTeamHaveBallByTag();
+        cooldownTimer = attachCooldown;
+    }
+
+    public void SetTeamHaveBall(PlayerManager.Team team)
+    {
+        if (playerManager != null)
         {
-            // Reactiva la colisión y la física antes de soltar la referencia
-            if (ballCollider != null)
-                ballCollider.enabled = true;
-            if (ballRb != null)
-                ballRb.isKinematic = false;
-
-            ball = null;
-            ballRb = null;
-            ballCollider = null;
-
-            // Activa el cooldown para evitar re-ataque inmediato
-            cooldownTimer = attachCooldown;
+            playerManager.teamHaveBall = team;
         }
     }
+    public void SetTeamHaveBallByTag(string teamTagName = "None")
+    {
+        if (playerManager != null)
+        {
+            if (teamTagName == "BlueTeam")
+                SetTeamHaveBall(PlayerManager.Team.BlueTeam);
+            else if (teamTagName == "RedTeam")
+                SetTeamHaveBall(PlayerManager.Team.RedTeam);
+            else
+                SetTeamHaveBall(PlayerManager.Team.None);
+        }
+    }
+
 
 }
